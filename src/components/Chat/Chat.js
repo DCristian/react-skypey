@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
+import _ from 'lodash';
 
 import './Chat.css';
 import Message from '../Message/Message';
 
-class Chats extends Component {
+class Chats extends PureComponent {
     chatRef =  null;
 
     scrollToBottom = () => {
@@ -26,7 +27,7 @@ class Chats extends Component {
     render() {
         return (
             <div className="Chat" ref={this.chatRef}>
-                {this.props.messages.map(message => (
+                {_.values(this.props.messages).map(message => (
                     <Message message={message} key={message.number} />
                 ))}
             </div>

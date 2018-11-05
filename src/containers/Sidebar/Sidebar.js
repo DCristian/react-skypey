@@ -1,19 +1,27 @@
-import React, { Component } from 'react';
+import React from 'react';
+import { connect } from 'react-redux';
 import _ from 'lodash';
 
 import './Sidebar.css';
 import User from '../../components/User/User';
-import store from '../../store';
 import { setActiveUserId } from '../../actions';
 
-class Sidebar extends Component {
-    handleUserClick = (userId) => {
-        store.dispatch(setActiveUserId(userId));
+const mapStateToProps = (state) => {
+    return {
+        contacts: state.contacts
     };
+};
 
-    render() {
-        const { contacts } = store.getState();
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setActiveUserId: (userId) => {
+            dispatch(setActiveUserId(userId));
+        }
+    };
+};
 
+export default connect(mapStateToProps, mapDispatchToProps)(
+    ({ contacts, setActiveUserId }) => {
         return (
             <aside className='Sidebar'>
                 {_.values(contacts).map(contact => {
@@ -21,13 +29,11 @@ class Sidebar extends Component {
                         <User
                             key={contact.user_id}
                             user={contact}
-                            onClick={this.handleUserClick.bind(this, contact.user_id)}
+                            onClick={setActiveUserId.bind(this, contact.user_id)}
                         />
                     );
                 })}
             </aside>
         );
     }
-}
-
-export default Sidebar;
+);

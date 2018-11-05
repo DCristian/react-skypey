@@ -1,41 +1,61 @@
 import React, { Component } from 'react';
-import _ from 'lodash';
+import { connect } from 'react-redux';
 
 import './ChatWindow.css';
-import store from '../../store/index';
 import Header from '../../components/Header/Header';
 import Chat from '../../components/Chat/Chat';
 import MessageInput from '../../components/MessageInput/MessageInput';
 import { sendMessage, setTypingValue } from '../../actions';
 
-class ChatWindow extends Component {
-    handleMessageInputChange = (event) => {
-        store.dispatch(setTypingValue(event.target.value));
+const mapStateToProps = (state) => {
+    return {
+      typing: state.typing,
+      activeUserId: state.activeUserId,
+      activeUser: state.contacts[state.activeUserId],
+      activeMessages: state.messages[state.activeUserId]
     };
+};
 
-    handleMessageInputSubmit = (event) => {
-        event.preventDefault();
-        const { typing, activeUserId } = store.getState();
-        store.dispatch(sendMessage(typing, activeUserId));
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setTypingValue: (value) => {
+            dispatch(setTypingValue(value));
+        },
+        sendMessage: (typing, activeUserId) => {
+            dispatch(sendMessage(typing, activeUserId));
+        }
     };
+};
 
-    render () {
-        const state  = store.getState();
-        const activeUser = state.contacts[this.props.activeUserId];
-        const activeMessages = state.messages[this.props.activeUserId];
+export default connect(mapStateToProps, mapDispatchToProps)(
+    class ChatWindow extends Component {
+        handleMessageInputChange = (event) => {
+            const value = event.currentTarget.value;
+            this.props.setTypingValue(value);
+        };
 
-        return (
-            <div className="ChatWindow">
-                <Header user={activeUser}/>
-                <Chat messages={_.values(activeMessages)}/>
-                <MessageInput
-                    value={state.typing}
-                    onChange={this.handleMessageInputChange}
-                    onSubmit={this.handleMessageInputSubmit}
-                />
-            </div>
-        );
+        handleMessageInputSubmit = (event) => {
+            event.preventDefault();
+
+            if (this.props.typing.length === 0) {
+                return;
+            }
+
+            this.props.sendMessage(this.props.typing, this.props.activeUserId);
+        };
+
+        render() {
+            return (
+                <div className="ChatWindow">
+                    <Header user={this.props.activeUser}/>
+                    <Chat messages={this.props.activeMessages}/>
+                    <MessageInput
+                        value={this.props.typing}
+                        onChange={this.handleMessageInputChange}
+                        onSubmit={this.handleMessageInputSubmit}
+                    />
+                </div>
+            );
+        }
     }
-}
-
-export default ChatWindow;
+);
